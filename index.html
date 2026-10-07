@@ -63,7 +63,7 @@ async function bgPoll(){if(!BG.code||BG.busy)return;BG.busy=1;
     if(!BG.seen){BG.seen=new Set(notes.map(x=>x.id));BG.last=lastId}   // first look only sets the baseline
     else{const fn=notes.filter(x=>!BG.seen.has(x.id)&&!x.read);notes.forEach(x=>BG.seen.add(x.id));
       let fc=[];if(!chat.length)BG.last='';else{const i=chat.findIndex(m=>m.id===BG.last);fc=(i>=0?chat.slice(i+1):BG.last===''?chat:[]).filter(m=>m.name!==BG.name);BG.last=lastId}
-      if(away()){
+      if(away()&&!j.quiet){
         if(fn.length)show(fn.length>1?fn.length+' new notifications':fn[0].title,fn.length>1?'Latest: '+fn[0].title:fn[0].text);
         else if(fc.length){const l=fc[fc.length-1];show(fc.length>1?fc.length+' new messages':l.name,fc.length>1?'Latest from '+l.name:l.text)}}}
   }catch(e){}BG.busy=0}

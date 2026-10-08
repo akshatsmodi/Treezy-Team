@@ -85,15 +85,17 @@ if('serviceWorker' in navigator)navigator.serviceWorker.register('sw.js').then(e
 async function ensurePush(){try{if(!BG.code||!('serviceWorker' in navigator)||!('PushManager' in window)||!('Notification' in window)||Notification.permission!=='granted')return;
   const reg=await navigator.serviceWorker.ready;let sub=await reg.pushManager.getSubscription();
   if(!sub)sub=await reg.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:u8(VAPID)});
-  const key=BG.code+sub.endpoint;if(BG.pushed===key)return;
+  BG.sub=true;const key=BG.code+sub.endpoint;if(BG.pushed===key)return;
   const r=await fetch(URL_,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({a:'pushSub',code:BG.code,sub:sub.toJSON()})}),j=await r.json();
-  if(!j.error)BG.pushed=key}catch(e){}}
+  if(!j.error){BG.pushed=key;BG.err=''}else BG.err=String(j.error)}catch(e){BG.err=String(e&&e.message||e)}}
 // opened from the Home Screen there is no splash button, so offer one until alerts are allowed
 const en=document.getElementById('en');
 function banner(){en.style.display=('Notification' in window&&Notification.permission==='default'&&document.getElementById('splash').classList.contains('hide'))?'block':'none'}
 en.onclick=()=>askAlerts();banner();setInterval(banner,1500);
 if(/iphone|ipad|ipod/i.test(navigator.userAgent)&&!installed)document.getElementById('ioshint').style.display='block';
 addEventListener('message',e=>{const d=e.data;if(!d)return;
+  if(d.treezy===3){(async()=>{BG.pushed=null;BG.code=String(d.code||BG.code||'');let sub=false;const T=new Promise(r=>setTimeout(()=>r('timeout'),3000));try{const w=await Promise.race([ensurePush().then(()=>'ok'),T]);if(w==='timeout')BG.err=BG.err||'The service worker (sw.js) did not start. Make sure sw.js is uploaded to GitHub next to index.html.';const reg=await Promise.race([navigator.serviceWorker.ready,T]);if(reg&&reg.pushManager)sub=!!(await reg.pushManager.getSubscription())}catch(x){BG.err=String(x&&x.message||x)}
+    try{e.source.postMessage({treezy:4,perm:('Notification' in window)?Notification.permission:'unsupported',push:'PushManager' in window,sw:'serviceWorker' in navigator,sub:sub,registered:!!BG.pushed,err:BG.err||'',app:!!(matchMedia('(display-mode: standalone)').matches||navigator.standalone)},'*')}catch(x){}})();return}
   if(d.treezy===2){if(d.code!==BG.code){BG.code=String(d.code||'');BG.seen=null;BG.last=null}bgPoll();ensurePush();return}
   if(d.treezy!==1)return;
   if(Date.now()-BG.at<30000)return; // the background watcher is working and reports this itself

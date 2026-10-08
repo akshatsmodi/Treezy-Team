@@ -25,7 +25,7 @@ button:hover{transform:translateY(-2px)}a{color:#9fc0ab;font-size:13px}
 @media(prefers-reduced-motion:reduce){*{animation:none!important}}
 </style></head><body>
 <div id="splash"><div class="orb"><span class="logo"></span></div><h1>TREEZY<br>TEAM</h1><p>Your studio, full screen.</p>
-<button id="go">Open TREEZY TEAM</button><p style="font-size:13px;max-width:340px">Allow notifications when your browser asks, so alerts reach you even while this window is minimised.</p><button id="inst" style="display:none">Install the app</button><p id="ioshint" style="display:none;font-size:13px;max-width:340px;color:#B7D36A">On iPhone: tap the Share button, choose Add to Home Screen, then open TREEZY TEAM from your Home Screen to turn on alerts.</p><a id="alt" target="_blank" rel="noopener" href="https://script.google.com/macros/s/AKfycbwDOlmZgwVWdNAopxhCHgCKtooC08YWP5reCmqdFYb4b33vB7kRpLmOfKvEyaV9XUKc/exec">Open in a new tab instead</a></div>
+<button id="go">Open TREEZY TEAM</button><p style="font-size:13px;max-width:340px">Allow notifications when your browser asks, so alerts reach you even while this window is minimised.</p><button id="inst">Install the app</button><p id="ioshint" style="display:none;font-size:13px;max-width:340px;color:#B7D36A">On iPhone: tap the Share button, choose Add to Home Screen, then open TREEZY TEAM from your Home Screen to turn on alerts.</p><a id="alt" target="_blank" rel="noopener" href="https://script.google.com/macros/s/AKfycbwDOlmZgwVWdNAopxhCHgCKtooC08YWP5reCmqdFYb4b33vB7kRpLmOfKvEyaV9XUKc/exec">Open in a new tab instead</a></div>
 <button id="en">Turn on alerts</button><div id="hot"></div><div id="bar"><button id="al">Desktop alerts</button><button id="fs">Toggle full screen</button><button onclick="document.getElementById('f').src=document.getElementById('f').src">Reload</button></div>
 <script>
 const URL_="https://script.google.com/macros/s/AKfycbwDOlmZgwVWdNAopxhCHgCKtooC08YWP5reCmqdFYb4b33vB7kRpLmOfKvEyaV9XUKc/exec",f=document.createElement('iframe');
@@ -37,9 +37,13 @@ function launch(full){
 function toggleFs(){const d=document;if(d.fullscreenElement||d.webkitFullscreenElement){(d.exitFullscreen||d.webkitExitFullscreen).call(d)}else{const e=d.documentElement;(e.requestFullscreen||e.webkitRequestFullscreen).call(e)}}
 document.getElementById('go').onclick=()=>{askAlerts();launch(true)};document.getElementById('fs').onclick=toggleFs;
 // installable app: Android and desktop Chrome/Edge offer a real install button
-let ip=null;addEventListener('beforeinstallprompt',e=>{e.preventDefault();ip=e;const b=document.getElementById('inst');if(b)b.style.display='inline-block'});
-document.getElementById('inst').onclick=async()=>{if(!ip)return;ip.prompt();try{await ip.userChoice}catch(e){}ip=null;document.getElementById('inst').style.display='none'};
-addEventListener('appinstalled',()=>{document.getElementById('inst').style.display='none'});
+let ip=null;const isApp=()=>matchMedia('(display-mode: standalone)').matches||matchMedia('(display-mode: fullscreen)').matches||navigator.standalone;
+addEventListener('beforeinstallprompt',e=>{e.preventDefault();ip=e});
+function instHelp(){const u=navigator.userAgent;alert(/iphone|ipad|ipod/i.test(u)?'On iPhone: tap the Share button in Safari, choose Add to Home Screen, then open TREEZY TEAM from your Home Screen.':/android/i.test(u)?'On Android: open the browser menu (three dots) and choose Install app or Add to Home screen.':'In Chrome or Edge: click the install icon at the right of the address bar, or open the browser menu and choose Install TREEZY TEAM.')}
+document.getElementById('inst').onclick=async()=>{if(ip){ip.prompt();try{await ip.userChoice}catch(e){}ip=null}else instHelp()};
+if(isApp())document.getElementById('inst').style.display='none';
+const bi=document.createElement('button');bi.textContent='Install app';bi.onclick=()=>document.getElementById('inst').onclick();if(!isApp())document.getElementById('bar').appendChild(bi);
+addEventListener('appinstalled',()=>{document.getElementById('inst').style.display='none';bi.remove()});
 
 // installed as an app: skip the splash and open straight away
 if(matchMedia('(display-mode: fullscreen)').matches||matchMedia('(display-mode: standalone)').matches||navigator.standalone)launch(false);
